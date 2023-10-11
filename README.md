@@ -1,0 +1,82 @@
+<!--
+ * @Author: QHGG
+ * @Date: 2022-05-07 17:24:57
+ * @LastEditTime: 2022-10-20 17:48:21
+ * @LastEditors: QHGG
+ * @Description: 
+ * @FilePath: /AlphaDrug/README.md
+-->
+## ParetoDrug — Official PyTorch Implementation
+
+This repository contains  the **official PyTorch implementation** of the paper: **Multi-Objective Structure-Based Molecule Generation with Pareto MCTS**
+
+## Datasets
+
+- [data/train-val-data.tsv](https://drive.google.com/drive/folders/1myoeLdsOYz8mSvYEhSdMfUszUJlaJR3u?usp=sharing): It contains all sequence pairs for training and validation.
+
+- [data/train-val-split.json](https://github.com/CMACH508/AlphaDrug/blob/main/data/train-val-split.json): It contains the index of the training pairs and test pairs in [train-val-data.tsv](https://drive.google.com/drive/folders/1myoeLdsOYz8mSvYEhSdMfUszUJlaJR3u?usp=sharing).
+
+- [data/testing-proteins-100.txt](https://github.com/CMACH508/AlphaDrug/blob/main/data/testing-proteins-100.txt): It contains all pdbids of the testing proteins which can be downloaded from [PDBbind website](http://www.pdbbind.org.cn/).
+
+
+## Requirements
+
+### Install
+Pleases follow these commands to install the environment:
+
+```
+conda create -n paretodrug python=3.7
+
+conda activate paretodrug
+
+conda install -c conda-forge smina=2020.12.10 rdkit=2020.09.5 openbabel=3.1.1
+
+conda install -c bioconda mmseqs2=13.45111
+
+pip install biopython==1.79 pandas==1.3.4
+
+pip install loguru biopython graphviz easydict tqdm scipy
+
+pip3 install torch==1.13.1 torchvision torchaudio
+```
+
+## Model Training
+
+- Before training, please make sure train-val-data.tsv is in the data folder.
+
+- There are several key args for training listed as follows:
+- 
+    | Argument | Description | Default | Type |
+    | :-----| :---- | :---- | :---- |
+    | --layers | Number of layers in transformer | 4 | int |
+    | --bs | Batch size | 32 | int |
+
+- Train lmser transformer:
+
+    ```shell
+    cd your_project_path
+    python train.py --layers 4 --bs 32 --device 0,1,2,3
+    ```
+
+## Pretrained Model
+
+### We provide the pretrained model for LT (Lmser Transformer) as follows:
+| Model  | Path |
+| :----- | :---- | 
+| Lmser Transformer | ./experiment/LT/model/30.pt|
+
+
+## Run Monte Carlo Tree Search (MCTS)
+
+### There are several key args for MCTS listed as follows:
+| Argument | Description | Default | Type |
+| :-----| :---- |:--------| :---- |
+| -k | Protein index | 0       | int |
+| -st | Number of simulation times in MCTS| 150     | int |
+| -p | NN model path | LT      | str |
+| --max | max mode or freq mode | True    | bool |
+
+### Here is an example of running ParetoDrug on protein 1a9u with 150 simulation times using the pretrained model LT in max mode with GPU 0.
+```shell
+python pareto_mcts.py -k 0 -g 0 -st 150 -p LT --max
+```
