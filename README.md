@@ -8,7 +8,7 @@
 -->
 ## ParetoDrug — Official PyTorch Implementation
 
-This repository contains  the **official PyTorch implementation** of the paper: **Multi-Objective Structure-Based Molecule Generation with Pareto MCTS**
+This repository contains  the **official PyTorch implementation** of the paper: **Enabling Structure-Based Molecule Generation to Follow Multi Objectives with Pareto MCTS**
 
 ## Datasets
 
@@ -85,3 +85,14 @@ python pareto_mcts.py -k 0 -g 0 -st 150 -p LT --max
 ```shell
 python pareto_mcts_case.py --protein 1a9u -g 0 -st 150 -p LT --max
 ```
+
+### For the multi-target SBDD case study of finding HIV-related dual-inhibitor molecules, please run the following command.
+```shell
+python mt_pareto_mcts_case.py
+```
+
+### For the multi-target multi-objective SBDD case study of the drug Lapatinib, please run the following command.
+```shell
+python mtmo_pareto_mcts_case.py
+```
+
