@@ -279,7 +279,6 @@ if __name__ == '__main__':
         pro_protein_sequence_list = []
         data_path = './data/{}'.format(args.q)
         test_pro_pdb_list = sorted(os.listdir('{}/Pro/'.format(data_path)))
-        test_anti_pdb_list = sorted(os.listdir('{}/Anti/'.format(data_path)))
         pro_protein_file_list = []
         pro_ligand_file_list = []
         for i_pro, test_pro_pdb in enumerate(test_pro_pdb_list):
@@ -292,6 +291,8 @@ if __name__ == '__main__':
             pro_protein_sequence = ProteinParser(test_pro_pdb, pro_pdb_path)
             pro_protein_sequence_list.append(pro_protein_sequence)
 
+        # test_anti_pdb_list = sorted(os.listdir('{}/Anti/'.format(data_path)))
+        test_anti_pdb_list = []
         anti_protein_file_list = []
         anti_ligand_file_list = []
         # for i_anti, test_anti_pdb in enumerate(test_anti_pdb_list):
