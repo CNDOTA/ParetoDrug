@@ -302,11 +302,11 @@ if __name__ == '__main__':
 
         anti_protein_file_list = []
         anti_ligand_file_list = []
-        for i_anti, test_anti_pdb in enumerate(test_anti_pdb_list):
-            anti_pdb_path = '{}/Anti/{}/{}_protein_clean.pdb'.format(data_path, test_anti_pdb, test_anti_pdb)
-            anti_lig_path = '{}/Anti/{}/{}_ligand.mol2'.format(data_path, test_anti_pdb, test_anti_pdb)
-            anti_protein_file_list.append(anti_pdb_path)
-            anti_ligand_file_list.append(anti_lig_path)
+        # for i_anti, test_anti_pdb in enumerate(test_anti_pdb_list):
+        #     anti_pdb_path = '{}/Anti/{}/{}_protein_clean.pdb'.format(data_path, test_anti_pdb, test_anti_pdb)
+        #     anti_lig_path = '{}/Anti/{}/{}_ligand.mol2'.format(data_path, test_anti_pdb, test_anti_pdb)
+        #     anti_protein_file_list.append(anti_pdb_path)
+        #     anti_ligand_file_list.append(anti_lig_path)
     else:
         raise NotImplementedError('Unknown source: %s' % args.source)
 
