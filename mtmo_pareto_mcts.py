@@ -326,7 +326,7 @@ if __name__ == '__main__':
         os.mkdir(resFolderPath)
     logger.add(os.path.join(experimentId, resFolder, "{time}.log"))
 
-    shutil.copyfile('momt_pareto_mcts.py', os.path.join(experimentId, resFolder) + '/momt_pareto_mcts.py')
+    shutil.copyfile('mtmo_pareto_mcts.py', os.path.join(experimentId, resFolder) + '/mtmo_pareto_mcts.py')
 
     if max([len(pps) for pps in pro_protein_sequence_list]) > 999:
         logger.info('Unable to process task {} with length {}'.format(args.q, [len(pps) for pps in pro_protein_sequence_list]))
