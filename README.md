@@ -51,7 +51,7 @@ pip3 install torch==1.13.1 torchvision torchaudio
     | --layers | Number of layers in transformer | 4 | int |
     | --bs | Batch size | 32 | int |
 
-- Train lmser transformer:
+- Train Lmser Transformer:
 
     ```shell
     cd your_project_path
