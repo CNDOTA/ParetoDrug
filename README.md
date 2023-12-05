@@ -76,23 +76,27 @@ pip3 install torch==1.13.1 torchvision torchaudio
 | -p | NN model path | LT      | str |
 | --max | max mode or freq mode | True    | bool |
 
-### Here is an example of running ParetoDrug on protein 1a9u with 150 simulation times using the pretrained model LT in max mode with GPU 0.
+### Multi-objective SBDD
+Here is an example of running ParetoDrug on protein 1a9u with 150 simulation times using the pretrained model LT in max mode with GPU 0.
 ```shell
 python pareto_mcts.py -k 0 -g 0 -st 150 -p LT --max
 ```
 
-### If you want to generate molecules for your own PDB file, please provide the PDB file named #PDBid_protein.pdb and ligand file named #PDBid_ligand.sdf and put them in the "/data/test_pdbs/#PDBid/" folder, then run the following command with the parameter "--protein #PDBid" such as "--protein 1a9u"
+### Multi-objective SBDD for the specified protein structure
+If you want to generate molecules for your own PDB file, please provide the PDB file named #PDBid_protein.pdb and ligand file named #PDBid_ligand.sdf and put them in the "/data/test_pdbs/#PDBid/" folder, then run the following command with the parameter "--protein #PDBid" such as "--protein 1a9u"
 ```shell
 python pareto_mcts_case.py --protein 1a9u -g 0 -st 150 -p LT --max
 ```
 
-### For the multi-target SBDD case study of finding HIV-related dual-inhibitor molecules, please run the following command.
+### Multi-target SBDD with case HIV
+For the multi-target SBDD case study of finding HIV-related dual-inhibitor molecules, please run the following command.
 ```shell
-python mt_pareto_mcts_case.py
+python mt_pareto_mcts_case.py -q HIV
 ```
 
-### For the multi-target multi-objective SBDD case study of the drug Lapatinib, please run the following command.
+### Multi-target multi-objective SBDD with case Lapatinib
+For the multi-target multi-objective SBDD case study of the drug Lapatinib, please run the following command.
 ```shell
-python mtmo_pareto_mcts_case.py
+python mtmo_pareto_mcts_case.py -q Lapatinib
 ```
 
