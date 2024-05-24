@@ -339,8 +339,8 @@ if __name__ == '__main__':
         print('Invalid molecule')
 
     # pkl.dump(mol_dic, open('./experiment/mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
-    print('Number of molecules {}'.format(len(infoma.keys())))
-    pkl.dump(infoma, open('mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
+    # print('Number of molecules {}'.format(len(infoma.keys())))
+    # pkl.dump(infoma, open('mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
     # print('total valid molecules are {} all molecules are {}'.format(len(allValidSmiles), len(allSmiles)))
     pkl.dump(mol_dic, open('./experiment/mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
 

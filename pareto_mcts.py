@@ -364,8 +364,8 @@ if __name__ == '__main__':
         print("Top Molecule in Pareto Front {} with scores {}".format(pm[0], infoma[pm[0]]))
         mol_dic['pareto_molecule_top_{}'.format(i_pm)] = (pm[0], infoma[pm[0]])
 
-    print('Number of molecules {}'.format(len(infoma.keys())))
-    pkl.dump(infoma, open('pareto_mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
+    # print('Number of molecules {}'.format(len(infoma.keys())))
+    # pkl.dump(infoma, open('pareto_mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
     pkl.dump(mol_dic, open('./experiment/{}_{}.pkl'.format(pro_id, args.t), 'wb'))
 
 
