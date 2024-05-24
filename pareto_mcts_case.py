@@ -222,7 +222,7 @@ def rollout(node, model):
                 reward_vector = getScoreVector(smileK, score_vector)
                 # only new molecules are printed
                 if affinity != 500:
-                    logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
+                    logger.success("{} with [Docking score, QED, LogP, SA, NP] {}".format(smileK, [round(i, 3) for i in [score_vector[0], score_vector[1], MolLogP(mols), -score_vector[3], score_vector[4]]]))
             if affinity == 500:  # affinity error in the function of CaculateAffinity of docking.py
                 Update(node, REWARDMIN)
             else:

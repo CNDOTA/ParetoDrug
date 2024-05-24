@@ -65,15 +65,16 @@ The running time lasts for several hours as ParetoDrug performs MCTS and inferen
 You can set a smaller 'st' parameter to reduce the running time.
 
 ### There are several key args for MCTS listed as follows:
-| Argument | Description | Default | Type |
-| :-----| :---- |:--------| :---- |
-| -k | Protein index | 0       | int |
-| -st | Number of simulation times in MCTS| 150     | int |
-| -p | NN model path | LT      | str |
-| --max | max mode or freq mode | True    | bool |
+| Argument | Description                        | Default | Type |
+|:---------|:-----------------------------------|:--------|:-----|
+| -k       | Protein index                      | 0       | int  |
+| -st      | Number of simulation times in MCTS | 150     | int  |
+| -p       | NN model path                      | LT      | str  |
+| --max    | max mode or freq mode              | True    | bool |
+| -g       | GPU index                          | 0       | int  |
 
 ### Multi-objective SBDD
-Here is an example of running ParetoDrug on protein 1a9u with 150 simulation times using the pretrained model LT in max mode with GPU 0.
+Here is an example of running ParetoDrug on protein 1a9u (protein index 0 in test proteins) with 150 simulation times using the pretrained model LT in max mode with GPU 0.
 ```shell
 python pareto_mcts.py -k 0 -g 0 -st 150 -p LT --max
 ```

@@ -12,6 +12,7 @@ from rdkit.Chem.QED import qed
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem import RDConfig
 from rdkit import RDLogger
+
 RDLogger.DisableLog('rdApp.*')
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'NP_Score'))
@@ -177,7 +178,8 @@ def rollout(node, model):
 
     while not IsPathEnd(path, smiMaxLen):
         # calculate the probabilities of next child node atoms of the current node
-        atomListExpanded, pListExpanded = sample(model, path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, pro_protein_sequence_list)
+        atomListExpanded, pListExpanded = sample(model, path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30,
+                                                 pro_protein_sequence_list)
         m = np.max(pListExpanded)
         indices = np.nonzero(pListExpanded == m)[0]
         ind = rd.choice(indices)
@@ -198,21 +200,29 @@ def rollout(node, model):
                 reward_vector = getScoreVector(smileK, score_vector)
             else:
                 if args.docking:
-                    pro_affinity_list, anti_affinity_list = CaculateAffinity(smileK, pro_protein_file_list, pro_ligand_file_list, anti_protein_file_list, anti_ligand_file_list, out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(smileK))
+                    pro_affinity_list, anti_affinity_list = CaculateAffinity(smileK, pro_protein_file_list,
+                                                                             pro_ligand_file_list,
+                                                                             anti_protein_file_list,
+                                                                             anti_ligand_file_list,
+                                                                             out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(smileK))
                 else:
-                    pro_affinity_list, anti_affinity_list = [0] * len(pro_protein_file_list), [0] * len(pro_ligand_file_list)
+                    pro_affinity_list, anti_affinity_list = [0] * len(pro_protein_file_list), [0] * len(
+                        pro_ligand_file_list)
                 score_vector = [-p_a for p_a in pro_affinity_list] + anti_affinity_list
                 score_vector += [
-                                qed(mols),
-                                1 if -0.4 < MolLogP(mols) < 5.6 else 0,  # Ghose filter
-                                -sascorer.calculateScore(mols),
-                                npscorer.scoreMol(mols, fscore),
-                                ]
+                    qed(mols),
+                    1 if -0.4 < MolLogP(mols) < 5.6 else 0,  # Ghose filter
+                    -sascorer.calculateScore(mols),
+                    npscorer.scoreMol(mols, fscore),
+                ]
                 infoma[smileK] = score_vector
                 # # calculate reward vector of the current molecule based on its score vector and global Pareto Front
                 reward_vector = getScoreVector(smileK, score_vector)
                 if -500 not in score_vector:
-                    logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
+                    logger.success("{} with [Docking score 1, Docking score 2, QED, LogP, SA, NP] {}".
+                                   format(smileK, [round(i, 3) for i in [score_vector[0], score_vector[1],
+                                                                         score_vector[2], MolLogP(mols),
+                                                                         -score_vector[4], score_vector[5]]]))
             # affinity error in the function of CaculateAffinity of docking.py
             if -500 in score_vector:
                 Update(node, REWARDMIN)
@@ -242,7 +252,6 @@ def MCTS(rootNode):
 
     currSimulationTimes = 0
     while currSimulationTimes < simulation_times:
-
         currSimulationTimes += 1
 
         # MCTS SELECT
@@ -257,7 +266,8 @@ def MCTS(rootNode):
         allSmiles.extend(smiles)
 
         # MCTS EXPAND
-        atomList, logpListExpanded = sample(model, node.path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, pro_protein_sequence_list)
+        atomList, logpListExpanded = sample(model, node.path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30,
+                                            pro_protein_sequence_list)
         pListExpanded = [np.exp(p) for p in logpListExpanded]
         Expand(node, atomList, pListExpanded)
 
@@ -332,7 +342,8 @@ if __name__ == '__main__':
     shutil.copyfile('mtmo_pareto_mcts.py', os.path.join(experimentId, resFolder) + '/mtmo_pareto_mcts.py')
 
     if max([len(pps) for pps in pro_protein_sequence_list]) > 999:
-        logger.info('Unable to process task {} with length {}'.format(args.q, [len(pps) for pps in pro_protein_sequence_list]))
+        logger.info(
+            'Unable to process task {} with length {}'.format(args.q, [len(pps) for pps in pro_protein_sequence_list]))
     else:
         s = readSettings(experimentId)
         vocabulary = s.smiVoc
@@ -361,7 +372,6 @@ if __name__ == '__main__':
         allSmiles = []
 
         while not IsPathEnd(node.path, smiMaxLen):
-
             times += 1
             node, scores, validSmiles, smiles = MCTS(node)
 
@@ -383,10 +393,15 @@ if __name__ == '__main__':
                     # affinity = -score_vector[0]
                     reward_vector = getScoreVector(alphaSmi, score_vector)
                 else:
-                    pro_affinity_list, anti_affinity_list = CaculateAffinity(alphaSmi, pro_protein_file_list, pro_ligand_file_list, anti_protein_file_list, anti_ligand_file_list, out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(alphaSmi))
+                    pro_affinity_list, anti_affinity_list = CaculateAffinity(alphaSmi, pro_protein_file_list,
+                                                                             pro_ligand_file_list,
+                                                                             anti_protein_file_list,
+                                                                             anti_ligand_file_list,
+                                                                             out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(alphaSmi))
                     mol = Chem.MolFromSmiles(alphaSmi)
                     score_vector = [-p_a for p_a in pro_affinity_list] + anti_affinity_list
-                    score_vector += [qed(mol), MolLogP(mol), -sascorer.calculateScore(mol), npscorer.scoreMol(mol, fscore)]
+                    score_vector += [qed(mol), MolLogP(mol), -sascorer.calculateScore(mol),
+                                     npscorer.scoreMol(mol, fscore)]
                     # calculate reward vector of the current molecule based on its score vector and global Pareto Front
                     reward_vector = getScoreVector(alphaSmi, score_vector)
                 # affinity = CaculateAffinity(alphaSmi, file_protein=pro_file[args.k], file_lig_ref=ligand_file[args.k])
@@ -398,15 +413,15 @@ if __name__ == '__main__':
             logger.error('abnormal ending: ' + ''.join(node.path))
 
         saveMCTSRes(resFolderPath, {
-                'score': allScores,
-                'validSmiles': allValidSmiles,
-                'allSmiles': allSmiles,
-                'finalSmile': alphaSmi,
-                'finalScore': reward_vector[0]
-            })
+            'score': allScores,
+            'validSmiles': allValidSmiles,
+            'allSmiles': allSmiles,
+            'finalSmile': alphaSmi,
+            'finalScore': reward_vector[0]
+        })
 
     ET = time.time()
-    logger.info('time: {} minutes'.format((ET-ST) // 60))
+    logger.info('time: {} minutes'.format((ET - ST) // 60))
 
     mol_dic = {'problem_id': args.q}
 
@@ -423,12 +438,3 @@ if __name__ == '__main__':
         print('Invalid molecule')
 
     pkl.dump(mol_dic, open('./experiment/{}_{}_st_{}_momt.pkl'.format(args.q, args.t, args.st), 'wb'))
-
-
-
-
-
-
-
-
-
