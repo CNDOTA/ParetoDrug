@@ -11,6 +11,8 @@ from rdkit import Chem
 from rdkit.Chem.QED import qed
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem import RDConfig
+from rdkit import RDLogger
+RDLogger.DisableLog('rdApp.*')
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'NP_Score'))
 # from rdkit.Contrib.SA_Score import sascorer
@@ -160,19 +162,20 @@ def rollout(node, model):
             else:
                 affinity = CaculateAffinity(smileK, file_protein=pro_file[args.k], file_lig_ref=ligand_file[args.k], out_path=resFolderPath)
                 infoma[smileK] = affinity
-            
+                if affinity != 500:
+                    logger.success("{}              {}".format(smileK, [round(i, 5) for i in [affinity]]))
             if affinity == 500:
                 Update(node, QMIN)
             else:
-                logger.success(smileK + '       ' + str(-affinity))
+                # logger.success(smileK + '       ' + str(-affinity))
                 Update(node, -affinity)
                 allScore.append(-affinity)
                 allValidSmiles.append(smileK)
         else:
-            logger.error('invalid: %s' % (''.join(path)))
+            # logger.error('invalid: %s' % (''.join(path)))
             Update(node, QMIN)
     else:
-        logger.warning('abnormal ending: %s' % (''.join(path)))
+        # logger.warning('abnormal ending: %s' % (''.join(path)))
         Update(node, QMIN)
 
     return allScore, allValidSmiles, allSmiles
@@ -335,6 +338,10 @@ if __name__ == '__main__':
     else:
         print('Invalid molecule')
 
+    # pkl.dump(mol_dic, open('./experiment/mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
+    print('Number of molecules {}'.format(len(infoma.keys())))
+    pkl.dump(infoma, open('mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
+    # print('total valid molecules are {} all molecules are {}'.format(len(allValidSmiles), len(allSmiles)))
     pkl.dump(mol_dic, open('./experiment/mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
 
 

@@ -11,6 +11,7 @@ from model.Lmser_Transformerr import MFT as DrugTransformer
 # from model.Transformer import MFT as DrugTransformer
 # from model.Transformer_Encoder import MFT as DrugTransformer
 
+import random
 from rdkit import Chem
 from loguru import logger
 from utils.docking import CaculateAffinity, ProteinParser
@@ -179,7 +180,7 @@ def BeamSearch(experimentId, modelName, root, k, beamSize=10):
 
     successNode = []
     nodeList = [rootNode]
-    while(len(successNode) < beamSize and len(nodeList)):
+    while(len(successNode) < beamSize and len(nodeList)) and len(allValidSmiles) <= 100:
         beam_expand_node = []
 
         for node in nodeList:
@@ -207,15 +208,25 @@ def BeamSearch(experimentId, modelName, root, k, beamSize=10):
             'validSmiles': allValidSmiles,
             'allSmiles': allSmiles
         }, f)
+
+    pkl.dump({'pdbid': test_pdblist[k],
+              'score': allScore,
+              'validSmiles': allValidSmiles,
+              'allSmiles': allSmiles,
+              'protein_seq': protein_seq},
+             open('bs_random_1a9u_{}.pkl'.format(args.t), 'wb'))
+    print('random sequence docking score {}'.format(sum(allScore[:100]) / len(allScore[:100])))
         
     logger.success('valid: {}'.format(len(allValidSmiles) / len(allSmiles)))
     
     return allScore
-    
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-k', type=int, default=0)
-    parser.add_argument('--device', type=str, default='3')
+    parser.add_argument('-t', type=int, default=0)
+    parser.add_argument('--device', type=str, default='0')
     parser.add_argument('-bs', type=int, default=10)
     parser.add_argument('--source', type=str, default='new')
     parser.add_argument('-p', type=str, default='LT', help='pretrained model')
@@ -230,7 +241,6 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError('Unknown source: %s' % args.source)
     
-    
     beamSize = args.bs
     experimentId = os.path.join('experiment', args.p)
     ST = time.time()
@@ -243,10 +253,17 @@ if __name__ == '__main__':
     logger.add(resFolderPath+"/{time}.log")
     logger.info('k='+str(args.k))
     
-    shutil.copyfile('./beamsearch.py',resFolderPath + '/beamsearch.py')
-    
+    shutil.copyfile('./beamsearch.py', resFolderPath + '/beamsearch.py')
+
+    print(protein_seq)
+    random.seed(0)
+    protein_seq = protein_seq.tomutable()
+    proVoc = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
+    for i in range(len(protein_seq)):
+        protein_seq[i] = random.choice(proVoc)
+    print(protein_seq)
     if len(protein_seq) > 999:
-        logger.info('skipping %s'%test_pdblist[args.k])
+        logger.info('skipping %s' % test_pdblist[args.k])
     else:
         score = BeamSearch(experimentId, m, resFolderPath, args.k, beamSize=beamSize)
             

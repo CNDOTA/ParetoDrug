@@ -10,6 +10,7 @@ import time
 import numpy as np
 from rdkit.ML.Descriptors import MoleculeDescriptors
 
+
 def ProteinParser(pdbid):
     
     # others = os.listdir('./data/v2020-other-PL/')
@@ -44,11 +45,11 @@ def CaculateAffinity(smi, file_protein='./1zys.pdb', file_lig_ref='./1zys_D_199.
         if vina == 'smina':
             # file_drug="sdf_ligand_"+str(pdb_id)+str(i)+".sdf"
             smina_cmd_output = os.path.join(out_path, prefix + str(time.time()))
-            launch_args = ["smina", "-r", file_protein, "-l", file_output, "--autobox_ligand", file_lig_ref, "--autobox_add", "10", "--seed", "1000", "--exhaustiveness", "9",">>", smina_cmd_output]
+            launch_args = ["smina", "-r", file_protein, "-l", file_output, "--autobox_ligand", file_lig_ref, "--autobox_add", "10", "--seed", "1000", "--exhaustiveness", "9", " >> ", smina_cmd_output, " 2>&1"]
             #  launch_args = ["smina", "-r", file_protein, "-l", file_output, "--autobox_ligand", file_lig_ref, "--autobox_add", "10", "--seed", "1000", "--exhaustiveness", "9","-o", prefix+'dockres.pdb']
             #  -o 1OYT-redock.pdbqt
             launch_string = ' '.join(launch_args)
-            logger.info(launch_string)
+            # logger.info(launch_string)
             p = subprocess.Popen(launch_string, shell=True, stdout=subprocess.PIPE)
             p.communicate()
 

@@ -1,3 +1,5 @@
+import random
+
 import torch
 import time
 import os
@@ -24,14 +26,16 @@ from model.Lmser_Transformerr import MFT as DrugTransformer
 # from model.Transformer import MFT as DrugTransformer
 # from model.Transformer_Encoder import MFT as DrugTransformer
 
-from utils.mt_docking import CaculateAffinity, ProteinParser, sample
+from utils.docking import CaculateAffinity, ProteinParser
 from utils.log import timeLable, readSettings, saveMCTSRes
+from beamsearch import sample
 
 import pickle as pkl
 
-infoma = {}
-moleculeParetoFront = {}
-SCOREDIM = 6
+
+infoma = {}  # used to store the docking information
+moleculeParetoFront = {}  # used to store the docking information, score_vector = [binding, qed, LogP, SA, NP-likeness]
+SCOREDIM = 5
 REWARDMIN = np.zeros(SCOREDIM)
 
 
@@ -52,7 +56,7 @@ class Node:
             puct = []
             # print("child number is {}".format(len(self.childNodes)))
             for childNode in self.childNodes:
-                puct.append(childNode.CalculatePUCT())
+                puct.append(childNode.CaculatePUCT())
             # compute the Pareto Front given statistics of all child nodes
             indices = getParetoFrontNodeIndices(puct)
             ind = rd.choice(indices)
@@ -69,10 +73,10 @@ class Node:
         self.visits += 1
         self.wins += wins
 
-    def CalculatePUCT(self):
+    def CaculatePUCT(self):
         if not self.parentNode:
             return 0.0  # 画图用的
-        c = 1.5  # default is 1.5
+        c = 1.5
         if self.visits == 0:
             wins = REWARDMIN
         else:
@@ -176,8 +180,8 @@ def rollout(node, model):
     thisSmiles = []
 
     while not IsPathEnd(path, smiMaxLen):
-        # calculate the probabilities of next child node atoms of the current node
-        atomListExpanded, pListExpanded = sample(model, path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, pro_protein_sequence_list)
+        # 快速走子, calculate the probabilities of next child node atoms of the current node
+        atomListExpanded, pListExpanded = sample(model, path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, protein_seq)
         m = np.max(pListExpanded)
         indices = np.nonzero(pListExpanded == m)[0]
         ind = rd.choice(indices)
@@ -194,35 +198,34 @@ def rollout(node, model):
             global moleculeParetoFront
             if smileK in infoma:
                 score_vector = infoma[smileK]
-                # affinity = -score_vector[0]
+                affinity = -score_vector[0]
                 reward_vector = getScoreVector(smileK, score_vector)
             else:
                 if args.docking:
-                    pro_affinity_list, anti_affinity_list = CaculateAffinity(smileK, pro_protein_file_list, pro_ligand_file_list, anti_protein_file_list, anti_ligand_file_list, out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(smileK))
+                    affinity = CaculateAffinity(smileK, file_protein=pro_file[args.k], file_lig_ref=ligand_file[args.k], out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(smileK))
                 else:
-                    pro_affinity_list, anti_affinity_list = [0] * len(pro_protein_file_list), [0] * len(pro_ligand_file_list)
-                score_vector = [-p_a for p_a in pro_affinity_list] + anti_affinity_list
-                score_vector += [
+                    affinity = 0
+
+                score_vector = [-affinity,
                                 qed(mols),
                                 1 if -0.4 < MolLogP(mols) < 5.6 else 0,  # Ghose filter
                                 -sascorer.calculateScore(mols),
                                 npscorer.scoreMol(mols, fscore),
                                 ]
                 infoma[smileK] = score_vector
-                # # calculate reward vector of the current molecule based on its score vector and global Pareto Front
+                # calculate reward vector of the current molecule based on its score vector and global Pareto Front
                 reward_vector = getScoreVector(smileK, score_vector)
-                if -500 not in score_vector:
+                # only new molecules are printed
+                if affinity != 500:
                     logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
-            # affinity error in the function of CaculateAffinity of docking.py
-            if -500 in score_vector:
+            if affinity == 500:  # affinity error in the function of CaculateAffinity of docking.py
                 Update(node, REWARDMIN)
             else:
                 # logger.success(smileK + '       ' + str(-affinity))
-                # logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
                 # Update(node, -affinity)
                 Update(node, reward_vector)
                 updateParetoFront(smileK, score_vector)  # never add false molecule into Pareto Front
-                # thisScore.append(-affinity)
+                thisScore.append(-affinity)
                 thisReward.append(reward_vector)
                 thisValidSmiles.append(smileK)
         else:
@@ -251,13 +254,13 @@ def MCTS(rootNode):
         # VisualizeInterMCTS(rootNode, modelName, './', times, QMAX, QMIN, QE)
 
         # rollout
-        score, validSmiles, smiles = rollout(node, model)  # Backpropagation after rollout in this function
+        score, validSmiles, smiles = rollout(node, model)
         allScore.extend(score)
         allValidSmiles.extend(validSmiles)
         allSmiles.extend(smiles)
 
         # MCTS EXPAND
-        atomList, logpListExpanded = sample(model, node.path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, pro_protein_sequence_list)
+        atomList, logpListExpanded = sample(model, node.path, vocabulary, proVoc, smiMaxLen, proMaxLen, device, 30, protein_seq)
         pListExpanded = [np.exp(p) for p in logpListExpanded]
         Expand(node, atomList, pListExpanded)
 
@@ -267,14 +270,14 @@ def MCTS(rootNode):
         allvisit = np.sum([n.visits for n in rootNode.childNodes]) * 1.0
         prList = np.random.multinomial(1, [n.visits / allvisit for n in rootNode.childNodes], 1)
         indices = list(set(np.argmax(prList, axis=1)))[0]
-        logger.info([n.visits / allvisit for n in rootNode.childNodes])
+        # logger.info([n.visits / allvisit for n in rootNode.childNodes])
 
     return rootNode.childNodes[indices], allScore, allValidSmiles, allSmiles
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-q', type=str, default='Lapatinib', help='mtmo problem data folder')
+    parser.add_argument('-k', type=int, default=0, help='protein index')
     parser.add_argument('--device', type=str, default='0')
     parser.add_argument('-st', type=int, default=150, help='simulation times')
     parser.add_argument('--source', type=str, default='new')
@@ -282,35 +285,17 @@ if __name__ == '__main__':
     parser.add_argument('--docking', type=int, default=1, help='enable docking')
     parser.add_argument('-t', type=int, default=0, help='test index')
     parser.add_argument('-g', type=int, default=0, help='gpu index')
+
     parser.add_argument('--max', action="store_true", help='max mode')
 
     args = parser.parse_args()
 
     if args.source == 'new':
-        pro_protein_sequence_list = []
-        data_path = './data/{}'.format(args.q)
-        test_pro_pdb_list = sorted(os.listdir('{}/Pro/'.format(data_path)))
-        pro_protein_file_list = []
-        pro_ligand_file_list = []
-        for i_pro, test_pro_pdb in enumerate(test_pro_pdb_list):
-            pro_pdb_path = '{}/Pro/{}/{}_protein_clean.pdb'.format(data_path, test_pro_pdb, test_pro_pdb)
-            pro_lig_path = '{}/Pro/{}/{}_ligand.mol2'.format(data_path, test_pro_pdb, test_pro_pdb)
-            pro_protein_file_list.append(pro_pdb_path)
-            pro_ligand_file_list.append(pro_lig_path)
-
-            # add pro protein sequence for model to inference
-            pro_protein_sequence = ProteinParser(test_pro_pdb, pro_pdb_path)
-            pro_protein_sequence_list.append(pro_protein_sequence)
-
-        # test_anti_pdb_list = sorted(os.listdir('{}/Anti/'.format(data_path)))
-        test_anti_pdb_list = []
-        anti_protein_file_list = []
-        anti_ligand_file_list = []
-        # for i_anti, test_anti_pdb in enumerate(test_anti_pdb_list):
-        #     anti_pdb_path = '{}/Anti/{}/{}_protein_clean.pdb'.format(data_path, test_anti_pdb, test_anti_pdb)
-        #     anti_lig_path = '{}/Anti/{}/{}_ligand.mol2'.format(data_path, test_anti_pdb, test_anti_pdb)
-        #     anti_protein_file_list.append(anti_pdb_path)
-        #     anti_ligand_file_list.append(anti_lig_path)
+        test_pdblist = sorted(os.listdir('./data/test_pdbs/'))
+        pro_file = ['./data/test_pdbs/%s/%s_protein.pdb' % (pdb, pdb) for pdb in test_pdblist]
+        ligand_file = ['./data/test_pdbs/%s/%s_ligand.sdf' % (pdb, pdb) for pdb in test_pdblist]
+        protein_seq = ProteinParser(test_pdblist[args.k])
+        pro_id = test_pdblist[args.k]
     else:
         raise NotImplementedError('Unknown source: %s' % args.source)
 
@@ -321,7 +306,7 @@ if __name__ == '__main__':
     modelName = '30.pt'
     hpc_device = "gpu" if torch.cuda.is_available() else "cpu"
     mode = "max" if args.max else "freq"
-    resFolder = '%s_%s_mcts_%s_%s_%s_%s' % (hpc_device, mode, simulation_times, timeLable(), modelName, args.q)
+    resFolder = '%s_%s_mcts_%s_%s_%s_%s_%s' % (hpc_device, mode, simulation_times, timeLable(), modelName, args.k, test_pdblist[args.k])
 
     resFolderPath = os.path.join(experimentId, resFolder)
 
@@ -329,10 +314,17 @@ if __name__ == '__main__':
         os.mkdir(resFolderPath)
     logger.add(os.path.join(experimentId, resFolder, "{time}.log"))
 
-    shutil.copyfile('mtmo_pareto_mcts.py', os.path.join(experimentId, resFolder) + '/mtmo_pareto_mcts.py')
+    shutil.copyfile('./pareto_mcts.py', os.path.join(experimentId, resFolder) + '/multi_target_pareto_mcts.py')
 
-    if max([len(pps) for pps in pro_protein_sequence_list]) > 999:
-        logger.info('Unable to process task {} with length {}'.format(args.q, [len(pps) for pps in pro_protein_sequence_list]))
+    print(protein_seq)
+    protein_seq = protein_seq.tomutable()
+    proVoc = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
+    for i in range(len(protein_seq)):
+        protein_seq[i] = random.choice(proVoc)
+    print(protein_seq)
+    0 / 0
+    if len(protein_seq) > 999:
+        logger.info('skipping %s' % test_pdblist[args.k])
     else:
         s = readSettings(experimentId)
         vocabulary = s.smiVoc
@@ -344,7 +336,7 @@ if __name__ == '__main__':
         device = torch.device("cuda:{}".format(device_ids[0]) if torch.cuda.is_available() else "cpu")
 
         model = DrugTransformer(**s)
-        model = torch.nn.DataParallel(model, device_ids=device_ids)  # 指定要用到的设备
+        model = torch.nn.DataParallel(model, device_ids=device_ids)  # specify the GPU ID
         model = model.to(device)  # 模型加载到设备0
         model.load_state_dict(torch.load(experimentId + '/model/' + modelName, map_location=device))
         model.to(device)
@@ -371,60 +363,19 @@ if __name__ == '__main__':
 
             # VisualizeMCTS(node.parentNode, modelName, resFolderPath, times)
 
-        alphaSmi = ''
-        # affinity = 500
-        reward_vector = REWARDMIN
-        if node.path[-1] == '$':
-            alphaSmi = ''.join(node.path[1:-1])
-            if Chem.MolFromSmiles(alphaSmi):
-                logger.success(alphaSmi)
-                if alphaSmi in infoma:
-                    score_vector = infoma[alphaSmi]
-                    # affinity = -score_vector[0]
-                    reward_vector = getScoreVector(alphaSmi, score_vector)
-                else:
-                    pro_affinity_list, anti_affinity_list = CaculateAffinity(alphaSmi, pro_protein_file_list, pro_ligand_file_list, anti_protein_file_list, anti_ligand_file_list, out_path=resFolderPath)  # - qed(Chem.MolFromSmiles(alphaSmi))
-                    mol = Chem.MolFromSmiles(alphaSmi)
-                    score_vector = [-p_a for p_a in pro_affinity_list] + anti_affinity_list
-                    score_vector += [qed(mol), MolLogP(mol), -sascorer.calculateScore(mol), npscorer.scoreMol(mol, fscore)]
-                    # calculate reward vector of the current molecule based on its score vector and global Pareto Front
-                    reward_vector = getScoreVector(alphaSmi, score_vector)
-                # affinity = CaculateAffinity(alphaSmi, file_protein=pro_file[args.k], file_lig_ref=ligand_file[args.k])
-
-                logger.success(reward_vector[0])
-            else:
-                logger.error('invalid: ' + ''.join(node.path))
-        else:
-            logger.error('abnormal ending: ' + ''.join(node.path))
-
-        saveMCTSRes(resFolderPath, {
-                'score': allScores,
-                'validSmiles': allValidSmiles,
-                'allSmiles': allSmiles,
-                'finalSmile': alphaSmi,
-                'finalScore': reward_vector[0]
-            })
-
     ET = time.time()
     logger.info('time: {} minutes'.format((ET-ST) // 60))
 
-    mol_dic = {'problem_id': args.q}
+    mol_dic = {'protein_id': pro_id}
 
     pareto_mols = sorted(moleculeParetoFront.items(), key=lambda item: sum(item[1]), reverse=True)
-    for i_pm, pm in enumerate(pareto_mols):
-        # print("Top Molecule in Pareto Front {} with scores {}".format(pm[0], infoma[pm[0]]))
+    for i_pm, pm in enumerate(pareto_mols[:5]):
+        print("Top Molecule in Pareto Front {} with scores {}".format(pm[0], infoma[pm[0]]))
         mol_dic['pareto_molecule_top_{}'.format(i_pm)] = (pm[0], infoma[pm[0]])
 
-    mol = Chem.MolFromSmiles(alphaSmi)
-    if mol:
-        # print('Alpha Smiles is {}, {}'.format(alphaSmi, np.asarray(score_vector).flatten().tolist() + [round(i, 5) for i in [qed(mol), MolLogP(mol), sascorer.calculateScore(mol), npscorer.scoreMol(mol, fscore)]]))
-        mol_dic['alpha_molecule'] = (alphaSmi, [np.asarray(score_vector).flatten().tolist()])
-    else:
-        print('Invalid molecule')
-
-    pkl.dump(mol_dic, open('./experiment/{}_{}_st_{}_momt.pkl'.format(args.q, args.t, args.st), 'wb'))
-
-
+    print('Number of molecules {}'.format(len(infoma.keys())))
+    pkl.dump(infoma, open('pareto_mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
+    pkl.dump(mol_dic, open('./experiment/{}_{}.pkl'.format(pro_id, args.t), 'wb'))
 
 
 

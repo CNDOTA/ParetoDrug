@@ -11,6 +11,8 @@ from rdkit import Chem
 from rdkit.Chem.QED import qed
 from rdkit.Chem.Crippen import MolLogP
 from rdkit.Chem import RDConfig
+from rdkit import RDLogger
+RDLogger.DisableLog('rdApp.*')
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'NP_Score'))
 # from rdkit.Contrib.SA_Score import sascorer
@@ -211,12 +213,13 @@ def rollout(node, model):
                 infoma[smileK] = score_vector
                 # calculate reward vector of the current molecule based on its score vector and global Pareto Front
                 reward_vector = getScoreVector(smileK, score_vector)
-
+                # only new molecules are printed
+                if affinity != 500:
+                    logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
             if affinity == 500:  # affinity error in the function of CaculateAffinity of docking.py
                 Update(node, REWARDMIN)
             else:
                 # logger.success(smileK + '       ' + str(-affinity))
-                logger.success("{}              {}".format(smileK, [round(i, 5) for i in score_vector]))
                 # Update(node, -affinity)
                 Update(node, reward_vector)
                 updateParetoFront(smileK, score_vector)  # never add false molecule into Pareto Front
@@ -224,10 +227,10 @@ def rollout(node, model):
                 thisReward.append(reward_vector)
                 thisValidSmiles.append(smileK)
         else:
-            logger.error('invalid: %s' % (''.join(path)))
+            # logger.error('invalid: %s' % (''.join(path)))
             Update(node, REWARDMIN)
     else:
-        logger.warning('abnormal ending: %s' % (''.join(path)))
+        # logger.warning('abnormal ending: %s' % (''.join(path)))
         Update(node, REWARDMIN)
 
     return thisScore, thisValidSmiles, thisSmiles
@@ -265,7 +268,7 @@ def MCTS(rootNode):
         allvisit = np.sum([n.visits for n in rootNode.childNodes]) * 1.0
         prList = np.random.multinomial(1, [n.visits / allvisit for n in rootNode.childNodes], 1)
         indices = list(set(np.argmax(prList, axis=1)))[0]
-        logger.info([n.visits / allvisit for n in rootNode.childNodes])
+        # logger.info([n.visits / allvisit for n in rootNode.childNodes])
 
     return rootNode.childNodes[indices], allScore, allValidSmiles, allSmiles
 
@@ -361,6 +364,8 @@ if __name__ == '__main__':
         print("Top Molecule in Pareto Front {} with scores {}".format(pm[0], infoma[pm[0]]))
         mol_dic['pareto_molecule_top_{}'.format(i_pm)] = (pm[0], infoma[pm[0]])
 
+    print('Number of molecules {}'.format(len(infoma.keys())))
+    pkl.dump(infoma, open('pareto_mcts_{}_{}.pkl'.format(pro_id, args.t), 'wb'))
     pkl.dump(mol_dic, open('./experiment/{}_{}.pkl'.format(pro_id, args.t), 'wb'))
 
 

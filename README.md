@@ -1,11 +1,3 @@
-<!--
- * @Author: QHGG
- * @Date: 2022-05-07 17:24:57
- * @LastEditTime: 2022-10-20 17:48:21
- * @LastEditors: QHGG
- * @Description: 
- * @FilePath: /AlphaDrug/README.md
--->
 ## ParetoDrug — Official PyTorch Implementation
 
 This repository contains  the **official PyTorch implementation** of the paper: **Enabling Structure-Based Molecule Generation to Follow Multi Objectives with Pareto MCTS**
@@ -68,6 +60,10 @@ pip3 install torch==1.13.1 torchvision torchaudio
 
 ## Run Monte Carlo Tree Search (MCTS)
 
+The computational resources to run ParetoDrug normally are 1 GPU and 8 CPU cores.
+The running time lasts for several hours as ParetoDrug performs MCTS and inferences with the pretrained generative model.
+You can set a smaller 'st' parameter to reduce the running time.
+
 ### There are several key args for MCTS listed as follows:
 | Argument | Description | Default | Type |
 | :-----| :---- |:--------| :---- |
@@ -91,12 +87,13 @@ python pareto_mcts_case.py --protein 1a9u -g 0 -st 150 -p LT --max
 ### Multi-target SBDD with case HIV
 For the multi-target SBDD case study of finding HIV-related dual-inhibitor molecules, please run the following command.
 ```shell
-python mt_pareto_mcts_case.py -q HIV
+python mt_pareto_mcts.py -q HIV
 ```
 
 ### Multi-target multi-objective SBDD with case Lapatinib
 For the multi-target multi-objective SBDD case study of the drug Lapatinib, please run the following command.
 ```shell
-python mtmo_pareto_mcts_case.py -q Lapatinib
+python mtmo_pareto_mcts.py -q Lapatinib
 ```
+
 
