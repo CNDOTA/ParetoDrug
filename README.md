@@ -81,6 +81,7 @@ python pareto_mcts.py -k 0 -g 0 -st 150 -p LT --max
 
 ### Multi-objective SBDD for the specified protein structure
 If you want to generate molecules for your own PDB file, please provide the PDB file named #PDBid_protein.pdb and ligand file named #PDBid_ligand.sdf and put them in the "/data/test_pdbs/#PDBid/" folder, then run the following command with the parameter "--protein #PDBid" such as "--protein 1a9u".
+Note that this will change the original protein index in "/data/test_pdbs".
 ```shell
 python pareto_mcts_case.py --protein 1a9u -g 0 -st 150 -p LT --max
 ```
