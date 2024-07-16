@@ -3,5 +3,13 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$USER_HOME$/PycharmProjects/BetaDrug" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/DEMAR" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/DebateLLM" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/EvoPlay" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/ProZero/GCGR_GLP-1R/PeptideModels" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/ProZero/pHLA_TCR/PEbA" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/ProZero/pHLA_TCR/prost" vcs="Git" />
+    <mapping directory="$USER_HOME$/PycharmProjects/ultramutate/TULIP-TCR" vcs="Git" />
+    <mapping directory="D:/Experiments/paretodrug/CProMG" vcs="Git" />
   </component>
 </project>

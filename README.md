@@ -1,6 +1,6 @@
 ## ParetoDrug — Official PyTorch Implementation
 
-This repository contains  the **official PyTorch implementation** of the paper: **Enabling Structure-Based Molecule Generation to Follow Multi Objectives with Pareto MCTS**
+This repository contains  the **official PyTorch implementation** of the paper: **Enabling Target-Aware Molecule Generation to Follow Multi Objectives with Pareto MCTS**.
 
 ## Datasets
 
@@ -97,5 +97,9 @@ For the multi-target multi-objective SBDD case study of the drug Lapatinib, plea
 ```shell
 python mtmo_pareto_mcts.py -q Lapatinib
 ```
+
+## Acknowledgements
+This repo is built upon the article: **AlphaDrug: protein target specific de novo molecular generation** and its repo https://github.com/CMACH508/AlphaDrug.
+We thanks the authors of AlphaDrug for releasing their codes and data. Please also consider to cite it if you use our repo.
 
 

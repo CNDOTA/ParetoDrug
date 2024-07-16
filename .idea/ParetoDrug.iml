@@ -2,9 +2,21 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="drug" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="BetaDrug" />
+    <orderEntry type="module" module-name="ultramutate" />
+    <orderEntry type="module" module-name="EvoPlay" />
+    <orderEntry type="module" module-name="pHLA_AlphaZero_Pareto_MCTS" />
+    <orderEntry type="module" module-name="ProZero" />
+    <orderEntry type="module" module-name="DebateLLM" />
+    <orderEntry type="module" module-name="TransPHLA-AOMP" />
+    <orderEntry type="module" module-name="REINVENT4" />
+    <orderEntry type="module" module-name="targetdiff" />
+    <orderEntry type="module" module-name="Pocket2Mol" />
+    <orderEntry type="module" module-name="CProMG" />
+    <orderEntry type="module" module-name="MDrug" />
+    <orderEntry type="module" module-name="DEMAR" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />

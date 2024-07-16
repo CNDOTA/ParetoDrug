@@ -3,7 +3,19 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$USER_HOME$/PycharmProjects/BetaDrug/.idea/BetaDrug.iml" filepath="$USER_HOME$/PycharmProjects/BetaDrug/.idea/BetaDrug.iml" />
+      <module fileurl="file://D:/Experiments/paretodrug/CProMG/.idea/CProMG.iml" filepath="D:/Experiments/paretodrug/CProMG/.idea/CProMG.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/DEMAR/.idea/DEMAR.iml" filepath="$USER_HOME$/PycharmProjects/DEMAR/.idea/DEMAR.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/DebateLLM/.idea/DebateLLM.iml" filepath="$USER_HOME$/PycharmProjects/DebateLLM/.idea/DebateLLM.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/EvoPlay/.idea/EvoPlay.iml" filepath="$USER_HOME$/PycharmProjects/EvoPlay/.idea/EvoPlay.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/MDrug/.idea/MDrug.iml" filepath="$USER_HOME$/PycharmProjects/MDrug/.idea/MDrug.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/ParetoDrug.iml" filepath="$PROJECT_DIR$/.idea/ParetoDrug.iml" />
+      <module fileurl="file://D:/Experiments/paretodrug/Pocket2Mol/.idea/Pocket2Mol.iml" filepath="D:/Experiments/paretodrug/Pocket2Mol/.idea/Pocket2Mol.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/ProZero/.idea/ProZero.iml" filepath="$USER_HOME$/PycharmProjects/ProZero/.idea/ProZero.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/REINVENT4/.idea/REINVENT4.iml" filepath="$USER_HOME$/PycharmProjects/REINVENT4/.idea/REINVENT4.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/TransPHLA-AOMP/.idea/TransPHLA-AOMP.iml" filepath="$USER_HOME$/PycharmProjects/TransPHLA-AOMP/.idea/TransPHLA-AOMP.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/pHLA_AlphaZero_Pareto_MCTS/.idea/pHLA_AlphaZero_Pareto_MCTS.iml" filepath="$USER_HOME$/PycharmProjects/pHLA_AlphaZero_Pareto_MCTS/.idea/pHLA_AlphaZero_Pareto_MCTS.iml" />
+      <module fileurl="file://D:/Experiments/paretodrug/targetdiff/.idea/targetdiff.iml" filepath="D:/Experiments/paretodrug/targetdiff/.idea/targetdiff.iml" />
+      <module fileurl="file://$USER_HOME$/PycharmProjects/ultramutate/.idea/ultramutate.iml" filepath="$USER_HOME$/PycharmProjects/ultramutate/.idea/ultramutate.iml" />
     </modules>
   </component>
 </project>
