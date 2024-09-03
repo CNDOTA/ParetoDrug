@@ -1,6 +1,6 @@
 ## ParetoDrug — Official PyTorch Implementation
 
-This repository contains  the **official PyTorch implementation** of the paper: **Enabling Target-Aware Molecule Generation to Follow Multi Objectives with Pareto MCTS**, which is published in communications biology.
+This repository contains  the **official PyTorch implementation** of the paper: **Enabling Target-Aware Molecule Generation to Follow Multi Objectives with Pareto MCTS**, which is published in Communications Biology.
 
 ## Datasets
 
